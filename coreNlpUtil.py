@@ -99,7 +99,6 @@ def ner(parseResult):
 
     for i in xrange(len(nerWordAnnotations)):
 
-               
         if i == 0:
             currentNE.append(nerWordAnnotations[i][2])
             currentCharacterOffsets.append(nerWordAnnotations[i][0])
