@@ -1528,13 +1528,8 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
 
 
 ########################################################################################################################
-def align(sentence1, sentence2, sentence1ParseResult, sentence2ParseResult):
+def align(sentence1ParseResult, sentence2ParseResult):
 
-    if isinstance(sentence1, list):
-        sentence1 = ' '.join(sentence1)
-    if isinstance(sentence2, list):
-        sentence2 = ' '.join(sentence2)
-        
     sentence1ParseResult = parseText(sentence1ParseResult)
     sentence2ParseResult = parseText(sentence2ParseResult)
 

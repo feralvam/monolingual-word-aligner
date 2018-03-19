@@ -188,7 +188,7 @@ if __name__ == '__main__':
         sent2_parse_result['sentences'] = [sent2_parse_file_result['sentences'][i] for i, _ in enumerate(sent2_text)]
 
         # get the alignments (only indices)
-        aligns = aligner.align(sent1_text, sent2_text, sent1_parse_result, sent2_parse_result)
+        aligns = aligner.align(sent1_parse_result, sent2_parse_result)
         # convert to pharaoh format: [[1, 1], [2, 2]] -> ['1-1', '2-2']
         alignsPharaoh = ['-'.join([str(p[0]), str(p[1])]) for p in aligns]
         # create a single line to write: ['1-1', '2-2'] -> '1-1 2-2'
