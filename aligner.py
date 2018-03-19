@@ -4,10 +4,10 @@ from coreNlpUtil import *
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def alignNouns(source, target, sourceParseResult, targetParseResult, existingAlignments):
-# source and target:: each is a list of elements of the form:
-# [[character begin offset, character end offset], word index, word, lemma, pos tag]
+    # source and target:: each is a list of elements of the form:
+    # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
     global ppdbSim
     global theta1
@@ -43,17 +43,17 @@ def alignNouns(source, target, sourceParseResult, targetParseResult, existingAli
 
     # construct the two matrices in the following loop
     for i in sourceWordIndices:
-        if i in sourceWordIndicesAlreadyAligned or (sourcePosTags[i-1][0].lower() <> 'n' and sourcePosTags[i-1].lower()<>'prp'):
+        if i in sourceWordIndicesAlreadyAligned or (sourcePosTags[i-1][0].lower() != 'n' and sourcePosTags[i-1].lower() != 'prp'):
             continue
 
         numberOfNounsInSource += 1
 
         for j in targetWordIndices:
-            if j in targetWordIndicesAlreadyAligned or (targetPosTags[j-1][0].lower() <> 'n' and targetPosTags[j-1].lower()<>'prp'):
+            if j in targetWordIndicesAlreadyAligned or (targetPosTags[j-1][0].lower() != 'n' and targetPosTags[j-1].lower() != 'prp'):
                 continue
 
 
-            if max(wordRelatedness(sourceWords[i-1], sourcePosTags[i-1], targetWords[j-1], targetPosTags[j-1]), wordRelatedness(sourceLemmas[i-1], sourcePosTags[i-1], targetLemmas[j-1], targetPosTags[j-1]))<ppdbSim:
+            if max(wordRelatedness(sourceWords[i-1], sourcePosTags[i-1], targetWords[j-1], targetPosTags[j-1]), wordRelatedness(sourceLemmas[i-1], sourcePosTags[i-1], targetLemmas[j-1], targetPosTags[j-1])) < ppdbSim:
                 continue
 
 
@@ -218,15 +218,15 @@ def alignNouns(source, target, sourceParseResult, targetParseResult, existingAli
 
 
     return nounAlignments
-##############################################################################################################################
+########################################################################################################################
 
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def alignMainVerbs(source, target, sourceParseResult, targetParseResult, existingAlignments):
-# source and target:: each is a list of elements of the form:
-# [[character begin offset, character end offset], word index, word, lemma, pos tag]
+    # source and target:: each is a list of elements of the form:
+    # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
     global ppdbSim
     global theta1
@@ -431,10 +431,10 @@ def alignMainVerbs(source, target, sourceParseResult, targetParseResult, existin
 
 
     return mainVerbAlignments
-##############################################################################################################################
+########################################################################################################################
 
 
-##############################################################################################################################
+########################################################################################################################
 def alignAdjectives(source, target, sourceParseResult, targetParseResult, existingAlignments):
 # source and target:: each is a list of elements of the form:
 # [[character begin offset, character end offset], word index, word, lemma, pos tag]
@@ -473,13 +473,13 @@ def alignAdjectives(source, target, sourceParseResult, targetParseResult, existi
 
     # construct the two matrices in the following loop
     for i in sourceWordIndices:
-        if i in sourceWordIndicesAlreadyAligned or sourcePosTags[i-1][0].lower() <> 'j':
+        if i in sourceWordIndicesAlreadyAligned or sourcePosTags[i-1][0].lower() != 'j':
             continue
 
         numberOfAdjectivesInSource += 1    
 
         for j in targetWordIndices:
-            if j in targetWordIndicesAlreadyAligned or targetPosTags[j-1][0].lower() <> 'j':
+            if j in targetWordIndicesAlreadyAligned or targetPosTags[j-1][0].lower() != 'j':
                 continue
 
 
@@ -623,14 +623,14 @@ def alignAdjectives(source, target, sourceParseResult, targetParseResult, existi
 
 
     return adjectiveAlignments
-##############################################################################################################################
+########################################################################################################################
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def alignAdverbs(source, target, sourceParseResult, targetParseResult, existingAlignments):
-# source and target:: each is a list of elements of the form:
-# [[character begin offset, character end offset], word index, word, lemma, pos tag]
+    # source and target:: each is a list of elements of the form:
+    # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
     global ppdbSim
     global theta1
@@ -802,13 +802,13 @@ def alignAdverbs(source, target, sourceParseResult, targetParseResult, existingA
 
 
     return adverbAlignments
-##############################################################################################################################
+########################################################################################################################
 
 
-##############################################################################################################################
+########################################################################################################################
 def alignNamedEntities(source, target, sourceParseResult, targetParseResult, existingAlignments):
-# source and target:: each is a list of elements of the form:
-# [[character begin offset, character end offset], word index, word, lemma, pos tag]
+    # source and target:: each is a list of elements of the form:
+    # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
     global punctuations
 
@@ -1055,14 +1055,14 @@ def alignNamedEntities(source, target, sourceParseResult, targetParseResult, exi
 
 ##############################################################################################################################
 def alignWords(source, target, sourceParseResult, targetParseResult):
-# source and target:: each is a list of elements of the form:
-# [[character begin offset, character end offset], word index, word, lemma, pos tag]
+    # source and target:: each is a list of elements of the form:
+    # [[character begin offset, character end offset], word index, word, lemma, pos tag]
 
-# function returns the word alignments from source to target - each alignment returned is of the following form:
-# [
-#  [[source word character begin offset, source word character end offset], source word index, source word, source word lemma],
-#  [[target word character begin offset, target word character end offset], target word index, target word, target word lemma]
-# ]
+    # function returns the word alignments from source to target - each alignment returned is of the following form:
+    # [
+    #  [[source word character begin offset, source word character end offset], source word index, source word, source word lemma],
+    #  [[target word character begin offset, target word character end offset], target word index, target word, target word lemma]
+    # ]
 
     global punctuations
 
@@ -1511,7 +1511,7 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
                     bestTextNeighborhoodSim = textualNeighborhoodSimilarities[(i, j)]
 
 
-        if bestWordSim>=ppdbSim and bestTextNeighborhoodSim>0 and [bestSourceIndex, bestTargetIndex] not in alignments:
+        if bestWordSim >= ppdbSim and bestTextNeighborhoodSim > 0 and [bestSourceIndex, bestTargetIndex] not in alignments:
             alignments.append([bestSourceIndex, bestTargetIndex])
             sourceWordIndicesAlreadyAligned.append(bestSourceIndex)
             targetWordIndicesAlreadyAligned.append(bestTargetIndex)
@@ -1520,17 +1520,14 @@ def alignWords(source, target, sourceParseResult, targetParseResult):
             sourceWordIndicesBeingConsidered.remove(bestSourceIndex)
         if bestTargetIndex in targetWordIndicesBeingConsidered:
             targetWordIndicesBeingConsidered.remove(bestTargetIndex)
-      
 
-
-    alignments = [item for item in alignments if item[0]<>0 and item[1]<>0]
+    alignments = [item for item in alignments if item[0] != 0 and item[1] != 0]
             
     return alignments
-##############################################################################################################################
+########################################################################################################################
 
 
-
-##############################################################################################################################
+########################################################################################################################
 def align(sentence1, sentence2):
 
     if isinstance(sentence1, list):
@@ -1569,5 +1566,5 @@ def align(sentence1, sentence2):
 
 
     return [myWordAlignments, myWordAlignmentTokens]
-##############################################################################################################################
+########################################################################################################################
 

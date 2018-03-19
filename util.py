@@ -1,8 +1,9 @@
 from config import *
 
-##############################################################################################################################
+
+########################################################################################################################
 def isSublist(A, B):
-# returns True if A is a sublist of B, False otherwise
+    # returns True if A is a sublist of B, False otherwise
     sub = True
 
     for item in A:
@@ -11,18 +12,18 @@ def isSublist(A, B):
             break
     
     return sub
-##############################################################################################################################
+########################################################################################################################
 
 
-##############################################################################################################################
+########################################################################################################################
 def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a very inefficient implementation, you can use suffix trees to devise a much faster method
-# returns all the contiguous sublists in order of decreasing length
-# output format (0-indexed):
-# [
-#    [[indices in 'A' for common sublist 1], [indices in 'B' for common sublist 1]],
-#    ...,
-#    [[indices in 'A' for common sublist n], [indices in 'B' for common sublist n]]
-# ]
+    # returns all the contiguous sublists in order of decreasing length
+    # output format (0-indexed):
+    # [
+    #    [[indices in 'A' for common sublist 1], [indices in 'B' for common sublist 1]],
+    #    ...,
+    #    [[indices in 'A' for common sublist n], [indices in 'B' for common sublist n]]
+    # ]
 
     a = []
     b = []
@@ -76,13 +77,13 @@ def findAllCommonContiguousSublists(A, B, turnToLowerCases=True): # this is a ve
 
                         
     return commonContiguousSublists
-##############################################################################################################################
+########################################################################################################################
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def findTextualNeighborhood(sentenceDetails, wordIndex, leftSpan, rightSpan):
-# return the lemmas in the span [wordIndex-leftSpan, wordIndex+rightSpan] and the positions actually available, left and right
+    # return the lemmas in the span [wordIndex-leftSpan, wordIndex+rightSpan] and the positions actually available, left and right
 
     global punctuations
 
@@ -102,22 +103,22 @@ def findTextualNeighborhood(sentenceDetails, wordIndex, leftSpan, rightSpan):
             lemmas.append(item[3])
             wordIndices.append(item[1])
     return [wordIndices, lemmas, wordIndex-startWordIndex, endWordIndex-wordIndex]
-##############################################################################################################################
+########################################################################################################################
 
 
-##############################################################################################################################
+########################################################################################################################
 def isAcronym(word, namedEntity):
-# returns whether 'word' is an acronym of 'namedEntity', which is a list of the component words
+    # returns whether 'word' is an acronym of 'namedEntity', which is a list of the component words
     canonicalWord = word.replace('.', '')
-    if not canonicalWord.isupper() or len(canonicalWord) <> len(namedEntity) or canonicalWord.lower() in ['a', 'i']:
+    if not canonicalWord.isupper() or len(canonicalWord) != len(namedEntity) or canonicalWord.lower() in ['a', 'i']:
         return False
 
     acronym = True    
     for i in xrange(len(canonicalWord)):
-        if canonicalWord[i] <> namedEntity[i][0]:
+        if canonicalWord[i] != namedEntity[i][0]:
             acronym = False
             break
 
     return acronym
-##############################################################################################################################
+########################################################################################################################
 

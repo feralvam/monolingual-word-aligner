@@ -18,10 +18,10 @@ class StanfordNLP:
         return json.loads(self.server.parse(text))
 
 
-##############################################################################################################################
-def parseText(sentences):
+########################################################################################################################
+def parseText(parseResult):
 
-    parseResult = nlp.parse(sentences)
+    # parseResult = nlp.parse(sentences)
 
     if len(parseResult['sentences']) == 1:
         return parseResult
@@ -30,19 +30,19 @@ def parseText(sentences):
 
     for i in xrange(len(parseResult['sentences'])):
 
-        if i>0:
+        if i > 0:
             for j in xrange(len(parseResult['sentences'][i]['dependencies'])):
 
-                for k in xrange(1,3):
+                for k in xrange(1, 3):
                     tokens = parseResult['sentences'][i]['dependencies'][j][k].split('-')
                     if tokens[0] == 'ROOT':
                         newWordIndex = 0
                     else:
-                        if not tokens[len(tokens)-1].isdigit(): # forced to do this because of entries like u"lost-8'" in parseResult
+                        if not tokens[len(tokens)-1].isdigit():  # forced to do this because of entries like u"lost-8'" in parseResult
                             continue
                         newWordIndex = int(tokens[len(tokens)-1])+wordOffset
                     if len(tokens) == 2:
-                        parseResult['sentences'][i]['dependencies'][j][k] = tokens[0]+ '-' + str(newWordIndex)
+                        parseResult['sentences'][i]['dependencies'][j][k] = tokens[0] + '-' + str(newWordIndex)
                     else:
                         w = ''
                         for l in xrange(len(tokens)-1):
@@ -51,11 +51,10 @@ def parseText(sentences):
                                 w += '-'
                         parseResult['sentences'][i]['dependencies'][j][k] = w + '-' + str(newWordIndex)
 
-        wordOffset +=  len(parseResult['sentences'][i]['words'])
-
+        wordOffset += len(parseResult['sentences'][i]['words'])
 
     # merge information of all sentences into one
-    for i in xrange(1,len(parseResult['sentences'])):
+    for i in xrange(1, len(parseResult['sentences'])):
         parseResult['sentences'][0]['text'] += ' ' + parseResult['sentences'][i]['text']
         for jtem in parseResult['sentences'][i]['dependencies']:
             parseResult['sentences'][0]['dependencies'].append(jtem)
@@ -66,11 +65,11 @@ def parseText(sentences):
     parseResult['sentences'] = parseResult['sentences'][0:1]
 
     return parseResult
-##############################################################################################################################
+########################################################################################################################
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def nerWordAnnotator(parseResult):
 
     res = []
@@ -80,15 +79,15 @@ def nerWordAnnotator(parseResult):
         tag = [[parseResult['sentences'][0]['words'][i][1]['CharacterOffsetBegin'], parseResult['sentences'][0]['words'][i][1]['CharacterOffsetEnd']], wordIndex, parseResult['sentences'][0]['words'][i][0], parseResult['sentences'][0]['words'][i][1]['NamedEntityTag']]
         wordIndex += 1
 
-        if tag[3] <> 'O':
+        if tag[3] != 'O':
             res.append(tag)
 
 
     return res
-##############################################################################################################################
+########################################################################################################################
 
 
-##############################################################################################################################
+########################################################################################################################
 def ner(parseResult):
 
     nerWordAnnotations = nerWordAnnotator(parseResult)
@@ -126,13 +125,11 @@ def ner(parseResult):
             if i == len(nerWordAnnotations)-1:
                 namedEntities.append([currentCharacterOffsets, currentWordOffsets, currentNE, nerWordAnnotations[i][3]])
 
-    #print namedEntities  
-
     return namedEntities    
-##############################################################################################################################
+########################################################################################################################
 
 
-##############################################################################################################################
+########################################################################################################################
 def posTag(parseResult):
 
     res = []
@@ -145,12 +142,12 @@ def posTag(parseResult):
 
 
     return res
-##############################################################################################################################
+########################################################################################################################
 
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def lemmatize(parseResult):
 
     res = []
@@ -163,15 +160,15 @@ def lemmatize(parseResult):
 
 
     return res
-##############################################################################################################################
+########################################################################################################################
 
 
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def dependencyParseAndPutOffsets(parseResult):
-# returns dependency parse of the sentence whhere each item is of the form (rel, left{charStartOffset, charEndOffset, wordNumber}, right{charStartOffset, charEndOffset, wordNumber})
+    # returns dependency parse of the sentence whhere each item is of the form (rel, left{charStartOffset, charEndOffset, wordNumber}, right{charStartOffset, charEndOffset, wordNumber})
 
     dParse = parseResult['sentences'][0]['dependencies']
     words = parseResult['sentences'][0]['words']
@@ -206,14 +203,14 @@ def dependencyParseAndPutOffsets(parseResult):
         result.append(newItem)
 
     return result
-##############################################################################################################################
+########################################################################################################################
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def findParents(dependencyParse, wordIndex, word):
-# word index assumed to be starting at 1
-# the third parameter is needed because of the collapsed representation of the dependencies...
+    # word index assumed to be starting at 1
+    # the third parameter is needed because of the collapsed representation of the dependencies...
 
     wordsWithIndices = ((int(item[2].split('{')[1].split('}')[0].split(' ')[2]), item[2].split('{')[0]) for item in dependencyParse)
     wordsWithIndices = list(set(wordsWithIndices))
@@ -253,15 +250,15 @@ def findParents(dependencyParse, wordIndex, word):
                 break
         
     return parentsWithRelation
-##############################################################################################################################
+########################################################################################################################
 
 
 
 
-##############################################################################################################################
+########################################################################################################################
 def findChildren(dependencyParse, wordIndex, word):
-# word index assumed to be starting at 1
-# the third parameter is needed because of the collapsed representation of the dependencies...
+    # word index assumed to be starting at 1
+    # the third parameter is needed because of the collapsed representation of the dependencies...
 
     wordsWithIndices = ((int(item[2].split('{')[1].split('}')[0].split(' ')[2]), item[2].split('{')[0]) for item in dependencyParse)
     wordsWithIndices = list(set(wordsWithIndices))
@@ -302,7 +299,7 @@ def findChildren(dependencyParse, wordIndex, word):
                 break
         
     return childrenWithRelation
-##############################################################################################################################
+########################################################################################################################
 
 
 nlp = StanfordNLP()
