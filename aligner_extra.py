@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     word_aligns = []
     for sent1_parse_json, sent2_parse_json in sents_info:
-
+        print "Processing alignment {}/{}.".format(len(word_aligns)+1, len(sents_info))
         sent1_parse_result = format_json_parser_results(sent1_parse_json)
         sent2_parse_result = format_json_parser_results(sent2_parse_json)
 
