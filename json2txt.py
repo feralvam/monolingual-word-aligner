@@ -31,35 +31,43 @@ def _get_depnode_index_by_label(node_deplabel, dep_parse, node_ids):
         index += 1
 
 
-def process_json_sentence(sentence, sent_num=1):
-    tokens, tokens_str = _format_token_info(sentence)
-
-    dep_parse = sentence['basicDependencies']
-    dep_parse_str = ""
-    for dep_node in dep_parse:
+def format_dependency_parse_tree(dependency_parse):
+    dep_tree_formatted = []
+    for dep_node in dependency_parse:
         dep_rel = dep_node['dep'].lower()
         dependent_gloss = dep_node['dependentGloss']
         dependent = dep_node['dependent']
 
         if dep_rel == 'prep':
-            aux_dep_node_index = _get_depnode_index(dep_node['dependent'], dep_parse)
+            aux_dep_node_index = _get_depnode_index(dep_node['dependent'], dependency_parse)
             if aux_dep_node_index:
                 dep_rel += u'_{}'.format(dep_node['dependentGloss'])
-                aux_dep_node = dep_parse[aux_dep_node_index]
+                aux_dep_node = dependency_parse[aux_dep_node_index]
                 dependent_gloss = aux_dep_node['dependentGloss']
                 dependent = aux_dep_node['dependent']
         elif dep_rel == 'conj':
-            aux_dep_node_index = _get_depnode_index_by_label('cc', dep_parse, [dep_node['dependent'], dep_node['governor']])
+            aux_dep_node_index = _get_depnode_index_by_label('cc', dependency_parse, [dep_node['dependent'], dep_node['governor']])
             if aux_dep_node_index:
-                aux_dep_node = dep_parse[aux_dep_node_index]
+                aux_dep_node = dependency_parse[aux_dep_node_index]
                 dep_rel += u'_{}'.format(aux_dep_node['dependentGloss'])
             else:
                 continue
         elif dep_rel in ['cc', 'pobj']:
             continue
 
-        dep_parse_str += u"{}({}-{}, {}-{})\n".format(dep_rel, dep_node['governorGloss'], dep_node['governor'],
-                                                      dependent_gloss, dependent)
+        dep_tree_formatted.append([dep_rel,
+                                   u"{}-{}".format(dep_node['governorGloss'], dep_node['governor']),
+                                   u"{}-{}".format(dependent_gloss, dependent)
+                                   ])
+
+    return dep_tree_formatted
+
+
+def transform_json2text_sentence(sentence, sent_num=1):
+    tokens, tokens_str = _format_token_info(sentence)
+
+    dep_parse_formatted = format_dependency_parse_tree(sentence['basicDependencies'])
+    dep_parse_str = '\n'.join([u"{}({}, {})\n".format(rel, left, right) for rel, left, right in dep_parse_formatted])
 
     info_str = u"Sentence #{} ({} tokens):\n".format(sent_num, len(tokens))
     info_str += ' '.join(tokens) + '\n'
@@ -70,20 +78,24 @@ def process_json_sentence(sentence, sent_num=1):
     return info_str
 
 
-def process_json_file(file_path, out_file_path, verbose=False):
+def transform_json2text_sentence_lst(sentence_lst):
+    sent_num = 0
+    info_lst = []
+    for sent in sentence_lst:
+        sent_num += 1
+        info_str = transform_json2text_sentence(sent, sent_num)
+        info_lst.append(info_str)
+
+    return '\n'.join(info_lst)
+
+
+def transform_json2text_file(file_path, out_file_path, verbose=False):
     if verbose:
         print ("Processing file {}".format(file_path))
     with open(file_path) as json_file, open(out_file_path, 'w') as out_file:
         sentences = json.load(json_file)['sentences']
-        sent_num = 0
-        info_file = []
-        for sent in sentences:
-            sent_num += 1
-            info_str = process_json_sentence(sent, sent_num)
-
-            info_file.append(info_str)
-
-        out_file.write('\n'.join(info_file).encode('utf8'))
+        info_file = transform_json2text_sentence_lst(sentences)
+        out_file.write(info_file.encode('utf8'))
 
 
 if __name__ == '__main__':
@@ -98,10 +110,10 @@ if __name__ == '__main__':
         with open(args.filelist) as file_list:
             for json_file_path in file_list:
                 out_file_path = os.path.splitext(json_file_path.strip())[0] + '.out'
-                process_json_file(json_file_path.strip(), out_file_path)
+                transform_json2text_file(json_file_path.strip(), out_file_path)
     elif args.file:
         out_file_path = os.path.splitext(args.file)[0] + '.out'
-        process_json_file(args.file, out_file_path)
+        transform_json2text_file(args.file, out_file_path)
     else:
         parser.print_help()
 
