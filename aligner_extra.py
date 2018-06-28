@@ -43,7 +43,7 @@ def group_sentence_alignments(sent1_parse_lst, sent2_parse_lst, sent_aligns):
     sent2_map = {}
     for index_pair in sent_aligns:
         sent1_index, sent2_index = map(int, index_pair.strip().split('\t'))
-
+        print sent1_index, sent2_index
         sent1_added = sent1_index in sent1_map
         sent2_added = sent2_index in sent2_map
 
@@ -94,7 +94,12 @@ if __name__ == '__main__':
 
     sent1_parse_lst = read_json_file(args.sent1parsepath)
     sent2_parse_lst = read_json_file(args.sent2parsepath)
-    sent_aligns = read_text_file(args.sentalignspath)
+    print len(sent1_parse_lst)
+    print len(sent2_parse_lst)
+    if args.sentalignspath is None:
+        sent_aligns = ['{}\t{}'.format(i, i) for i in range(0, len(sent1_parse_lst))]
+    else:    
+        sent_aligns = read_text_file(args.sentalignspath)
 
     # sent1_parse_lst = read_json_file("./test/263225_Ramsar_Convention.r0004.old.json")
     # sent2_parse_lst = read_json_file("./test/263225_Ramsar_Convention.r0004.new.json")
@@ -104,18 +109,25 @@ if __name__ == '__main__':
 
     word_aligns = []
     for sent1_parse_json, sent2_parse_json in sents_info:
-        print "Processing alignment {}/{}.".format(len(word_aligns)+1, len(sents_info))
-        sent1_parse_result = format_json_parser_results(sent1_parse_json)
-        sent2_parse_result = format_json_parser_results(sent2_parse_json)
-
-        # get the alignments (only indices)
-        aligns = aligner.align(sent1_parse_result, sent2_parse_result)
-        # convert to pharaoh format: [[1, 1], [2, 2]] -> ['1-1', '2-2']
-        aligns_pharaoh = ['-'.join([str(p[0]), str(p[1])]) for p in aligns]
-        # create a single line to write: ['1-1', '2-2'] -> '1-1 2-2'
-        aligns_line = ' '.join(aligns_pharaoh)
-        word_aligns.append(aligns_line)
-
+        try:
+            print "Processing alignment {}/{}.".format(len(word_aligns)+1, len(sents_info))
+            sent1_parse_result = format_json_parser_results(sent1_parse_json)
+            sent2_parse_result = format_json_parser_results(sent2_parse_json)
+            # get the alignments (only indices)
+            aligns = aligner.align(sent1_parse_result, sent2_parse_result)
+            # convert to pharaoh format: [[1, 1], [2, 2]] -> ['1-1', '2-2']
+            aligns_pharaoh = ['-'.join([str(p[0]), str(p[1])]) for p in aligns]
+            # create a single line to write: ['1-1', '2-2'] -> '1-1 2-2'
+            aligns_line = ' '.join(aligns_pharaoh)
+            word_aligns.append(aligns_line)
+        except:
+            print "ERROR FOUND:"
+            print sent1_parse_json
+            print
+            print
+            print sent2_parse_json
+            print
+    
     aligns_file_path = os.path.join(args.outputfolder, args.outputfilename)
     with open(aligns_file_path, 'w') as aligns_file_path:
         aligns_file_path.write('\n'.join(word_aligns))
