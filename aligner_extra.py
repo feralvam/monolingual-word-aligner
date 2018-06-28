@@ -1,29 +1,8 @@
-import argparse
-import json
-import json2txt
-import os
 import aligner
-
-
-def format_json_parser_results(sent_parse_json):
-    results = {"sentences": []}
-    for sent_json in sent_parse_json:
-        sent_formatted = {'words': []}
-        # format the information of each word
-        for token in sent_json['tokens']:
-            word = token['originalText']
-            attributes = {'CharacterOffsetBegin': u'{}'.format(token['characterOffsetBegin']),
-                          'CharacterOffsetEnd': u'{}'.format(token['characterOffsetEnd']),
-                          'PartOfSpeech': token['pos'], 'Lemma': token['lemma'], 'NamedEntityTag': token['ner']}
-            sent_formatted['words'].append((word, attributes))
-
-        sent_formatted['text'] = ' '.join([word for word, _ in sent_formatted['words']])
-        sent_formatted['parsetree'] = ' '.join(sent_json['parse'].split())
-        sent_formatted['dependencies'] = json2txt.format_dependency_parse_tree(sent_json['basicDependencies'])
-
-        results["sentences"].append(sent_formatted)
-
-    return results
+import argparse
+import coreNlpUtil
+import json
+import os
 
 
 def read_text_file(file_path):
@@ -69,13 +48,14 @@ def group_sentence_alignments(sent1_parse_lst, sent2_parse_lst, sent_aligns):
             else:
                 sent1_map[sent1_index] = sent_group_index
                 sent1_parse[sent_group_index].append(sent1_parse_lst[sent1_index])
-        elif not sent1_added and not sent2_added:  # it is at least a 1-to-1
+        else:
+            # not sent1_added and not sent2_added: it is a new pair. We treat as 1-to-1
+            # sent1_added and sent2_added: it is a M-to-N (not supported). We add it as a 1-to-1
             sent_group_index = len(sent1_parse)
             sent1_map[sent1_index] = sent_group_index
             sent2_map[sent2_index] = sent_group_index
             sent1_parse.insert(sent_group_index, [sent1_parse_lst[sent1_index]])
             sent2_parse.insert(sent_group_index, [sent2_parse_lst[sent2_index]])
-        # else: sent1_added and sent2_added:  # it is a M-to-N (not supported)
 
     return zip(sent1_parse, sent2_parse)
 
@@ -94,39 +74,25 @@ if __name__ == '__main__':
 
     sent1_parse_lst = read_json_file(args.sent1parsepath)
     sent2_parse_lst = read_json_file(args.sent2parsepath)
-    print len(sent1_parse_lst)
-    print len(sent2_parse_lst)
-    if args.sentalignspath is None:
+
+    if args.sentalignspath is None:  # assume 1-to-1 alignment
         sent_aligns = ['{}\t{}'.format(i, i) for i in range(0, len(sent1_parse_lst))]
     else:    
         sent_aligns = read_text_file(args.sentalignspath)
-
-    # sent1_parse_lst = read_json_file("./test/263225_Ramsar_Convention.r0004.old.json")
-    # sent2_parse_lst = read_json_file("./test/263225_Ramsar_Convention.r0004.new.json")
-    # sent_aligns = read_text_file("./test/263225_Ramsar_Convention.r0004.lines")
 
     sents_info = group_sentence_alignments(sent1_parse_lst, sent2_parse_lst, sent_aligns)
 
     word_aligns = []
     for sent1_parse_json, sent2_parse_json in sents_info:
-        try:
-            print "Processing alignment {}/{}.".format(len(word_aligns)+1, len(sents_info))
-            sent1_parse_result = format_json_parser_results(sent1_parse_json)
-            sent2_parse_result = format_json_parser_results(sent2_parse_json)
-            # get the alignments (only indices)
-            aligns = aligner.align(sent1_parse_result, sent2_parse_result)
-            # convert to pharaoh format: [[1, 1], [2, 2]] -> ['1-1', '2-2']
-            aligns_pharaoh = ['-'.join([str(p[0]), str(p[1])]) for p in aligns]
-            # create a single line to write: ['1-1', '2-2'] -> '1-1 2-2'
-            aligns_line = ' '.join(aligns_pharaoh)
-            word_aligns.append(aligns_line)
-        except:
-            print "ERROR FOUND:"
-            print sent1_parse_json
-            print
-            print
-            print sent2_parse_json
-            print
+        sent1_parse_result = coreNlpUtil.format_json_parser_results(sent1_parse_json)
+        sent2_parse_result = coreNlpUtil.format_json_parser_results(sent2_parse_json)
+        # get the alignments (only indices)
+        aligns, _ = aligner.align(sent1_parse_result, sent2_parse_result)
+        # convert to pharaoh format: [[1, 1], [2, 2]] -> ['1-1', '2-2']
+        aligns_pharaoh = ['-'.join([str(p[0]), str(p[1])]) for p in aligns]
+        # create a single line to write: ['1-1', '2-2'] -> '1-1 2-2'
+        aligns_line = ' '.join(aligns_pharaoh)
+        word_aligns.append(aligns_line)
     
     aligns_file_path = os.path.join(args.outputfolder, args.outputfilename)
     with open(aligns_file_path, 'w') as aligns_file_path:

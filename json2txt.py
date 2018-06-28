@@ -91,7 +91,7 @@ def transform_json2text_sentence_lst(sentence_lst):
 
 def transform_json2text_file(file_path, out_file_path, verbose=False):
     if verbose:
-        print ("Processing file {}".format(file_path))
+        print "Processing file {}".format(file_path)
     with open(file_path) as json_file, open(out_file_path, 'w') as out_file:
         sentences = json.load(json_file)['sentences']
         info_file = transform_json2text_sentence_lst(sentences)
@@ -100,7 +100,7 @@ def transform_json2text_file(file_path, out_file_path, verbose=False):
 
 if __name__ == '__main__':
     # create an Argument Parser to handle command line arguments
-    parser = argparse.ArgumentParser(description="Transforms a json file to a out file from StanfordCoreNLP.")
+    parser = argparse.ArgumentParser(description="Transforms a json file to an out file from StanfordCoreNLP.")
     parser.add_argument('-file', help="a single json file")
     parser.add_argument('-filelist', help="a text file with the paths of several json files")
 

@@ -1,27 +1,45 @@
 import json
-from jsonrpc import ServerProxy, JsonRpc20, TransportTcpIp
-import jsonrpclib
+import json2txt
+from stanfordcorenlp import StanfordCoreNLP
 
 
+nlp = StanfordCoreNLP(r'/home/fernandom/Tools/stanford-corenlp-full-2018-02-27')
+#nlp = StanfordCoreNLP('http://localhost', port=9000)
+props = {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse','pipelineLanguage': 'en',
+         'depparse.model': "edu/stanford/nlp/models/parser/nndep/english_SD.gz", 'outputFormat': 'json'}
 
 
-from config import *
+def format_json_parser_results(sent_parse_json):
+    results = {"sentences": []}
+    for sent_json in sent_parse_json:
+        sent_formatted = {'words': []}
+        # format the information of each word
+        for token in sent_json['tokens']:
+            word = token['originalText']
+            attributes = {'CharacterOffsetBegin': u'{}'.format(token['characterOffsetBegin']),
+                          'CharacterOffsetEnd': u'{}'.format(token['characterOffsetEnd']),
+                          'PartOfSpeech': token['pos'],
+                          'Lemma': token['lemma'],
+                          'NamedEntityTag': token['ner']}
+            sent_formatted['words'].append((word, attributes))
 
+        sent_formatted['text'] = ' '.join([word for word, _ in sent_formatted['words']])
+        # sent_formatted['parsetree'] = ' '.join(sent_json['parse'].split())
+        sent_formatted['dependencies'] = json2txt.format_dependency_parse_tree(sent_json['basicDependencies'])
 
+        results["sentences"].append(sent_formatted)
 
-class StanfordNLP:
-    def __init__(self):
-        self.server = ServerProxy(JsonRpc20(),
-                                  TransportTcpIp(addr=("127.0.0.1", 8080)))
-    
-    def parse(self, text):
-        return json.loads(self.server.parse(text))
+    return results
 
 
 ########################################################################################################################
-def parseText(parseResult):
+def parseText(sentences):
 
-    # parseResult = nlp.parse(sentences)
+    if isinstance(sentences, basestring):  # the sentence(s) need to be parsed
+        json_parse_result = json.loads(nlp.annotate(sentences, properties=props))['sentences']
+        parseResult = format_json_parser_results(json_parse_result)
+    else:
+        parseResult = sentences
 
     if len(parseResult['sentences']) == 1:
         return parseResult
@@ -299,6 +317,3 @@ def findChildren(dependencyParse, wordIndex, word):
         
     return childrenWithRelation
 ########################################################################################################################
-
-
-nlp = StanfordNLP()
